@@ -3,6 +3,7 @@ import requests
 from bson import ObjectId
 from models.db import get_db
 
+
 app = Flask(__name__)
 db = get_db()
 reviews_collection = db['reviews']
@@ -14,7 +15,7 @@ MOVIE_API_URL = f'http://www.omdbapi.com/?i=tt3896198&apikey={API_KEY}'
 # Home Route - Fetch movies from API and show existing reviews
 @app.route('/')
 def index():
-    search_query = request.args.get('query', 'Avengers')  # Default search
+    search_query = request.args.get('query', 'Shin Chan')  # Default search
     response = requests.get(f'{MOVIE_API_URL}&s={search_query}')
     movies = response.json().get('Search', [])  # Fetch movie results from API
 
