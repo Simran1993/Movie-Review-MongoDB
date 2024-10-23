@@ -5,8 +5,12 @@ from pymongo import MongoClient
 load_dotenv(find_dotenv())
 
 
-connection_string= "mongodb+srv://simrn204:Ottawa2004@simran1993.rc2c4.mongodb.net/"
+password_db= os.environ.get("MONGODB_PWD")
+connection_string= os.environ.get("MONGODB_CON")
 client= MongoClient(connection_string)
 
 dbs=client.list_database_names()
 print(dbs)
+test_db = client.test 
+collections= test_db.list_collection_names()
+print(collections)
