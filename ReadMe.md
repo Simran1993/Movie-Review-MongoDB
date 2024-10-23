@@ -13,7 +13,7 @@ This is a simple Flask-based web application that allows users to search for mov
 
 - Python 3.x
 - MongoDB (local or cloud MongoDB instance)
-- OMDb API key (or any other movie database API providing poster URLs)
+- OMDb API key
 
 ## Setup Instructions
 
