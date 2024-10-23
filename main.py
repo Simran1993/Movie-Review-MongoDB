@@ -14,3 +14,7 @@ print(dbs)
 test_db = client.test 
 collections= test_db.list_collection_names()
 print(collections)
+
+def test_db():
+    collections= test_db.test
+    

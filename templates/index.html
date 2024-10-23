@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Review Platform</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Movie Review Platform</h1>
+
+    <!-- Movie Search Form -->
+    <form action="/" method="GET">
+        <input type="text" name="query" placeholder="Search Movies" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- List of Movies -->
+    <h2>Movies</h2>
+    <div class="movies">
+        {% for movie in movies %}
+        <div class="movie">
+            <h3>{{ movie['Title'] }} ({{ movie['Year'] }})</h3>
+            <img src="{{ movie['Poster'] }}" alt="{{ movie['Title'] }}">
+            <form action="/add_review" method="POST">
+                <input type="hidden" name="movie_id" value="{{ movie['imdbID'] }}">
+                <textarea name="review" placeholder="Write your review" required></textarea>
+                <input type="number" name="rating" min="1" max="5" placeholder="Rating (1-5)" required>
+                <button type="submit">Submit Review</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- List of User Reviews -->
+    <h2>Your Reviews</h2>
+    <div class="reviews">
+        {% for review in reviews %}
+        <div class="review">
+            <p>Movie ID: {{ review['movie_id'] }}</p>
+            <p>Review: {{ review['review'] }}</p>
+            <p>Rating: {{ review['rating'] }}/5</p>
+            
+            <!-- Edit Review Form -->
+            <form action="/update_review/{{ review['_id'] }}" method="POST">
+                <textarea name="review">{{ review['review'] }}</textarea>
+                <input type="number" name="rating" min="1" max="5" value="{{ review['rating'] }}">
+                <button type="submit">Update Review</button>
+            </form>
+            
+            <!-- Delete Review -->
+            <a href="/delete_review/{{ review['_id'] }}">Delete Review</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
