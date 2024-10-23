@@ -27,12 +27,16 @@ def index():
 @app.route('/add_review', methods=['POST'])
 def add_review():
     movie_id = request.form.get('movie_id')
+    movie_title = request.form.get('movie_title')
+    movie_poster = request.form.get('movie_poster')  # Fetch poster URL from form
     review_text = request.form.get('review')
     rating = request.form.get('rating')
     
     # Insert new review into MongoDB
     reviews_collection.insert_one({
         'movie_id': movie_id,
+        'movie_title': movie_title,
+        'movie_poster': movie_poster,  # Store poster URL
         'review': review_text,
         'rating': int(rating)
     })
