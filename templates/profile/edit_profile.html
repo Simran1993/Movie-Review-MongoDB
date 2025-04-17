@@ -1,0 +1,50 @@
+{# templates/profile/edit_profile.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-center items-center min-h-screen py-6">
+    <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-6">
+        <h5 class="text-2xl font-semibold text-gray-800 mb-4">Edit Profile</h5>
+        <form method="POST" class="space-y-6">
+            
+            <div>
+                <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
+                <textarea 
+                    name="bio" 
+                    id="bio" 
+                    rows="4"
+                    class="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                >{{ profile.bio }}</textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Favorite Genres</label>
+                <div class="grid grid-cols-3 gap-4 mt-2">
+                    {% for genre in ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 
+                                     'Romance', 'Thriller', 'Animation', 'Documentary'] %}
+                    <div class="flex items-center">
+                        <input 
+                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                            type="checkbox" 
+                            name="favorite_genres" 
+                            value="{{ genre }}" 
+                            id="genre_{{ genre|lower }}"
+                            {% if genre in profile.favorite_genres %}checked{% endif %}>
+                        <label 
+                            class="ml-2 text-sm text-gray-600" 
+                            for="genre_{{ genre|lower }}">
+                            {{ genre }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button 
+                type="submit" 
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Update Profile
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
