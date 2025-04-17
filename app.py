@@ -1,70 +1,64 @@
-from flask import Flask, render_template, request, redirect, url_for
-import requests
-from bson import ObjectId
-from models.db import get_db
+from flask import Flask
+from flask_pymongo import PyMongo
+import os
+from db.db import DatabaseSetup
 
+from routes.auth import auth_bp
+from routes.movie import movie_bp
+from routes.review import review_bp
+from routes.profile import profile_bp
 
-app = Flask(__name__)
-db = get_db()
-reviews_collection = db['reviews']
+from models.user import UserModel
+from models.review import ReviewModel
+from factories.movie_provider_factory import MovieProviderFactory
+from models.profile import ProfileModel
 
-# Replace with your own API key from OMDb or TMDb
-API_KEY = 'b24150c3'
-MOVIE_API_URL = f'http://www.omdbapi.com/?i=tt3896198&apikey={API_KEY}'
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Home Route - Fetch movies from API and show existing reviews
-@app.route('/')
-def index():
-    search_query = request.args.get('query', 'Shin Chan')  # Default search
-    response = requests.get(f'{MOVIE_API_URL}&s={search_query}')
-    movies = response.json().get('Search', [])  # Fetch movie results from API
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = '11dsd215e16e'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-    # Fetch reviews from MongoDB
-    reviews = list(reviews_collection.find())
+    # Ensure the upload directory exists
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     
-    return render_template('index.html', movies=movies, reviews=reviews)
-
-# Route to add a new review
-@app.route('/add_review', methods=['POST'])
-def add_review():
-    movie_id = request.form.get('movie_id')
-    movie_title = request.form.get('movie_title')
-    movie_poster = request.form.get('movie_poster')  # Fetch poster URL from form
-    review_text = request.form.get('review')
-    rating = request.form.get('rating')
+    # MongoDB Configuration add your mongolink here
+    app.config["MONGO_URI"] = "mongodb+srv://jot:jot123@cluster0.yziq9.mongodb.net/dbtest"
     
-    # Insert new review into MongoDB
-    reviews_collection.insert_one({
-        'movie_id': movie_id,
-        'movie_title': movie_title,
-        'movie_poster': movie_poster,  # Store poster URL
-        'review': review_text,
-        'rating': int(rating)
-    })
+    mongo = PyMongo(app)
     
-    return redirect(url_for('index'))
-
-# Route to update an existing review
-@app.route('/update_review/<review_id>', methods=['POST'])
-def update_review(review_id):
-    new_review = request.form.get('review')
-    new_rating = request.form.get('rating')
+    print("Setting up database optimizations...")
+    db_setup = DatabaseSetup(app.config["MONGO_URI"])
+    setup_success = db_setup.setup_all()
     
-    # Update the review in the database
-    reviews_collection.update_one(
-        {'_id': ObjectId(review_id)},
-        {'$set': {'review': new_review, 'rating': int(new_rating)}}
+    if setup_success:
+        print("Database optimization completed successfully!")
+    else:
+        print("Warning: Some database optimizations failed. Application will continue with reduced performance.")
+    
+    # Initialize models and services
+    app.user_model = UserModel(mongo.db)
+    app.review_model = ReviewModel(mongo.db)
+    app.movie_provider = MovieProviderFactory.get_provider(
+        'omdb',
+        'b24150c3'
     )
+    app.profile_model = ProfileModel(mongo.db)
     
-    return redirect(url_for('index'))
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(movie_bp)
+    app.register_blueprint(review_bp)
+    app.register_blueprint(profile_bp)
+    
+    return app
 
-# Route to delete a review
-@app.route('/delete_review/<review_id>')
-def delete_review(review_id):
-    # Remove review from MongoDB
-    reviews_collection.delete_one({'_id': ObjectId(review_id)})
-    
-    return redirect(url_for('index'))
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)
+
